@@ -38,6 +38,7 @@ void board_Load(Board board, Board boardToLoad) {
    }
 }
 
+
 Boolean board_PlacePlayer(Board board, Position position) {
 	if (board[position.y][position.x] == board_EMPTY) {
 		board[position.y][position.x] = board_PLAYER;

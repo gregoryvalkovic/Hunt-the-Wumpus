@@ -5,7 +5,7 @@
  */
 #include "game.h"
 #define INPUT_SIZE 20
-
+#define INPUT_PROMPT "Please enter your choice: "
 
 /* Function prototypes */
 void printFirstMenu();
@@ -81,7 +81,7 @@ Status loadBoardLoop(Board board) {
 	while (TRUE) {
 		printf("At this stage of the program only two commands are acceptable:"
 				"\n%s <g>\n%s\n\n", COMMAND_LOAD, COMMAND_QUIT);
-		inputResult = getInput("Please enter your choice: ", input, INPUT_SIZE);
+		inputResult = getInput(INPUT_PROMPT, input, INPUT_SIZE);
 		
 		/* Loops if input is NULL */
 		if (inputResult == ReadInputResultSuccess) {
@@ -107,39 +107,38 @@ Status loadBoardLoop(Board board) {
 
 
 Status initPlayerLoop(Board board, Player *player) {
-	char *commandToken;
-	char *xToken;
-	char *yToken;
+	char *command, char *xToken, char *yToken;
 	long int xValue, yValue;
-	char prompt[] = "Please enter your choice: ";
 	char input[INPUT_SIZE];
 	int inputResult;
 	struct position playerPosition;	
 
 	while(TRUE) {
+		/* Prompt for input and read into inputResult */
 		printf("At this stage of the program only two commands are acceptable:"
 		"\n%s <x> <y>\n%s\n\n", COMMAND_INIT, COMMAND_QUIT);
+		inputResult = getInput(INPUT_PROMPT, input, INPUT_SIZE);
 		
-		/* Takes three tokens of input. Quits or loops appropriately */
-		inputResult = getInput(prompt, input, INPUT_SIZE);
+		/* Process first input token */
 		if (inputResult == ReadInputResultSuccess) {
-			commandToken = strtok(input, " ");
-			if (isNull(commandToken)) {
+			if (isNull(command = strtok(input, " "))) {
 				printInvalidInput();
 				continue;
 			}
-			if (isQuit(commandToken)) {
+			if (isQuit(command)) {
 				return STATUS_QUIT;
-			}	
+			}
+			/* TODO: Seperate x and y by a comma */
+			/* Grab x and y token, reloop if either are null */
 			xToken = strtok(NULL, " ");
-			yToken = strtok(NULL, " ");	
+			yToken = strtok(NULL, " ");
 			if (isNull(xToken) || isNull(yToken)) {
 				printInvalidInput();
 				continue;
 			}
 			
-			/* Places the player position if valid input is given  */
-			if (strcmp(commandToken, COMMAND_INIT) == 0) {	
+			/* Places the player position if valid input is given */
+			if (isInit(command)) {	
 				xValue = strtol(xToken, NULL, 10);
 				yValue = strtol(yToken, NULL, 10);
 				if (yValue >= 0 && yValue <= 4 && xValue >= 0 && xValue <= 4) {
@@ -423,6 +422,18 @@ Boolean isLoad(char *str) {
 	}
 	else {
 		isLoad = FALSE;	
+	}
+	return isLoad;
+}
+
+
+Boolean isInit(char *str) {
+	Boolean isInit;
+	if (strcmp(str, COMMAND_INIT) == 0) {
+		isInit = TRUE;
+	}
+	else {
+		isInit = FALSE;	
 	}
 	return isLoad;
 }
