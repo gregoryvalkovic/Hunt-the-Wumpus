@@ -25,6 +25,7 @@ Boolean isDirection(char *command);
 Boolean isQuit(char *command);
 Boolean isShoot(char *command);
 Boolean isLoad(char *str);
+Boolean isInit(char *str);
 Boolean hasArrows(Player *player);
 
 
@@ -92,7 +93,7 @@ Status loadBoardLoop(Board board) {
 			if (isQuit(command)) {
 				return STATUS_QUIT;
 			}
-			/* Loads board if valid input given */
+			/* Loads board if input is valid */
 			if (isLoad(command) && !isNull(boardToken = strtok(NULL, " "))) {
 				if (processBoardToken(board, boardToken) == STATUS_CONTINUE) {
 					printf("Board successfully loaded\n\n");	
@@ -107,7 +108,7 @@ Status loadBoardLoop(Board board) {
 
 
 Status initPlayerLoop(Board board, Player *player) {
-	char *command, char *xToken, char *yToken;
+	char *command, *xToken, *yToken;
 	long int xValue, yValue;
 	char input[INPUT_SIZE];
 	int inputResult;
@@ -417,7 +418,7 @@ Boolean isNull(char *str) {
 
 Boolean isLoad(char *str) {
 	Boolean isLoad;
-	if (strcmp(str, COMMAND_LOAD)) {
+	if (strcmp(str, COMMAND_LOAD) == 0) {
 		isLoad = TRUE;
 	}
 	else {
@@ -435,5 +436,5 @@ Boolean isInit(char *str) {
 	else {
 		isInit = FALSE;	
 	}
-	return isLoad;
+	return isInit;
 }
