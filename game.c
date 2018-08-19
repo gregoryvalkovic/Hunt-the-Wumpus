@@ -135,12 +135,8 @@ Status initPlayerLoop(Board board, Player *player) {
 				printInvalidInput();
 				continue;
 			}
-			if (isNull(xYPair = strtok(NULL, " "))) {
-				printInvalidInput();
-				continue;
-			}
 			xToken = strtok(xYPair, ",");
-			xToken = strtok(NULL, ",");
+			yToken = strtok(NULL, ",");
 			if (isNull(xToken) || isNull(yToken)) {
 				printInvalidInput();
 				continue;
