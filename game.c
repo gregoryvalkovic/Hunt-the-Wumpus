@@ -27,6 +27,7 @@ Boolean isShoot(char *command);
 Boolean isLoad(char *str);
 Boolean isInit(char *str);
 Boolean hasArrows(Player *player);
+Boolean inBounds(int x, int y);
 
 
 void game_PlayGame(){
@@ -108,7 +109,7 @@ Status loadBoardLoop(Board board) {
 
 
 Status initPlayerLoop(Board board, Player *player) {
-	char *command, *xToken, *yToken;
+	char *command, *xYPair, *xToken, *yToken;
 	long int xValue, yValue;
 	char input[INPUT_SIZE];
 	int inputResult;
@@ -117,7 +118,7 @@ Status initPlayerLoop(Board board, Player *player) {
 	while(TRUE) {
 		/* Prompt for input and read into inputResult */
 		printf("At this stage of the program only two commands are acceptable:"
-		"\n%s <x> <y>\n%s\n\n", COMMAND_INIT, COMMAND_QUIT);
+		"\n%s <x>,<y>\n%s\n\n", COMMAND_INIT, COMMAND_QUIT);
 		inputResult = getInput(INPUT_PROMPT, input, INPUT_SIZE);
 		
 		/* Process first input token */
@@ -129,45 +130,52 @@ Status initPlayerLoop(Board board, Player *player) {
 			if (isQuit(command)) {
 				return STATUS_QUIT;
 			}
-			/* TODO: Seperate x and y by a comma */
 			/* Grab x and y token, reloop if either are null */
-			xToken = strtok(NULL, " ");
-			yToken = strtok(NULL, " ");
+			if (isNull(xYPair = strtok(NULL, " "))) {
+				printInvalidInput();
+				continue;
+			}
+			if (isNull(xYPair = strtok(NULL, " "))) {
+				printInvalidInput();
+				continue;
+			}
+			xToken = strtok(xYPair, ",");
+			xToken = strtok(NULL, ",");
 			if (isNull(xToken) || isNull(yToken)) {
 				printInvalidInput();
 				continue;
 			}
-			
-			/* Places the player position if valid input is given */
+			/* Places the player if valid position is given */
 			if (isInit(command)) {	
 				xValue = strtol(xToken, NULL, 10);
 				yValue = strtol(yToken, NULL, 10);
-				if (yValue >= 0 && yValue <= 4 && xValue >= 0 && xValue <= 4) {
+				
+				if (inBounds(xValue, yValue)) {
 					playerPosition.x = xValue;
 					playerPosition.y = yValue;
-					
-					if (!board_PlacePlayer(board, playerPosition)) {
-						printf("Unable to place player at that position\n\n");
-						continue;
-					}
-					else {
+					if (board_PlacePlayer(board, playerPosition)) {
 						player_Initialise(player, playerPosition);
 						return STATUS_CONTINUE;
 					}
-				}
-				else {
-					printInvalidInput();
-					continue;
+					else {
+						printf("Unable to place player at that position\n\n");
+						continue;
+					}
 				}
 			}
 		}
-		else {
-			printInvalidInput();
-			continue;
-		}
+		printInvalidInput();
+		continue;
 	}
 }
 
+
+Boolean inBounds(int x, int y) {
+	if (x >= 0 && x <= BOARD_WIDTH - 1 && y >= 0 && y <= BOARD_HEIGHT - 1) {
+		return TRUE;
+	}
+	return FALSE;	
+}
 
 Status moveShootLoop(Board board, Player *player) {
 	char prompt[] = "Please enter your choice: ";
