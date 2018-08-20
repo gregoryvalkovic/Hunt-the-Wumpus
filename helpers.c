@@ -77,6 +77,7 @@ void enableWindowsCompatibility()
 
 /*--------------------- My own helper functions ------------------------------*/
 
+/* Prints a given number of dashes */
 void printLine(int length) {
 	int i;
 	for (i=0; i < length; i++) {
@@ -86,12 +87,11 @@ void printLine(int length) {
 }
 
 
+/* Prints a given number of blank spaces */
 void printBlank(int length) {
 	int i;
 	for(i=0; i < length; i++) {
 		printf(" ");
 	}
 }
-
-
 

@@ -122,4 +122,9 @@ void board_Display(Board board);
  */
 void board_DisplayWarnings(Board board, Position positon);
 
+/** Takes a position. If both coordinates are in range of the board
+	return TRUE, else return FALSE 
+*/
+Boolean board_InBounds(Position p);
+
 #endif

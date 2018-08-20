@@ -27,7 +27,7 @@ Board BOARD_2 =
 void printHeader();
 void printBlank(int length);
 Boolean isInRange(Position p1, Position p2);
-Boolean isInBounds(Position p);
+
 
 void board_Load(Board board, Board boardToLoad) {
 	int i, j;
@@ -37,6 +37,7 @@ void board_Load(Board board, Board boardToLoad) {
    	   }
    }
 }
+
 
 Boolean board_PlacePlayer(Board board, Position position) {
 	if (board[position.y][position.x] == board_EMPTY) {
@@ -68,6 +69,8 @@ PlayerMove board_MovePlayer(Board board, Position playerPosition,
 		return board_BAT_CELL;
 	}
 	else {
+		board[playerPosition.y][playerPosition.x] = board_TRAVERSED;
+		board[nextPosition.y][nextPosition.x] = board_PLAYER;
 		return board_PLAYER_MOVED;
 	}
 }
@@ -75,8 +78,7 @@ PlayerMove board_MovePlayer(Board board, Position playerPosition,
 
 ArrowHit board_FireArrow(Board board, Position position) {
 	ArrowHit arrowHit;
-	
-	if (isInBounds(position)) {
+	if (board_InBounds(position)) {
    	   if (board[position.y][position.x] == board_WUMPUS) {
    	   	   arrowHit = board_WUMPUS_KILLED;
    	   }
@@ -114,6 +116,7 @@ void board_Display(Board board) {
 }
 
 
+/* Prints the first row of the board */
 void printHeader() {
 	int i;
 	printBlank(2);
@@ -161,6 +164,8 @@ void board_DisplayWarnings(Board board, Position position){
 }
 
 
+/* 	Takes two positions. Returns TRUE if the two positions are adjacent to each
+	other on the board (including diagonally adjacent) */
 Boolean isInRange(Position p1, Position p2) {
 	if (p1.x == p2.x - 1 || p1.x == p2.x || p1.x == p2.x + 1) {
 		if (p1.y == p2.y - 1 || p1.y == p2.y || p1.y == p2.y + 1) {
@@ -171,9 +176,11 @@ Boolean isInRange(Position p1, Position p2) {
 }
 
 
-Boolean isInBounds(Position p) {
+/* 	Takes a position. If both coordinates are in range of the board
+	return TRUE, else return FALSE */
+Boolean board_InBounds(Position p) {
 	if (p.x < 0 || p.x > BOARD_WIDTH - 1 || p.y < 0 || p.y > BOARD_HEIGHT - 1){
    		return FALSE;
    	}
-   	return TRUE;
+   	else return TRUE;
 }
