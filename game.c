@@ -13,15 +13,15 @@ void printFirstMenu();
 void printMoveShootPrompt();
 void printInitPlayerPrompt();
 
-Status loadBoardLoop(Board board);
-Status initPlayerLoop(Board board, Player *player);
-Status moveShootLoop(Board board, Player *player);
-Status processBoardToken(Board board, char *str);
-Boolean processInit(Board board, Player *player, char *command);
+Boolean loadBoardLoop(Board board);
+Boolean initPlayerLoop(Board board, Player *player);
+Boolean moveShootLoop(Board board, Player *player);
 
+Boolean processBoardToken(Board board, char *str);
+Boolean processInit(Board board, Player *player, char *command);
 ArrowHit processShoot(Board board, Player *player, char *command);
 PlayerMove processMoveResult(Board board, Player *player,
-	PlayerMove moveResult);
+							 PlayerMove moveResult);
 PlayerMove processMoveCommand (Board board, Player *player, char *command);
 
 void batReposition(Board board, Player *player);
@@ -34,20 +34,21 @@ Boolean isShoot(char *command);
 Boolean isLoad(char *str);
 Boolean isInit(char *str);
 Boolean hasArrows(Player *player);
-Boolean inBounds(int x, int y);
+
 /* -------------------------------------------------------------------------- */
-
-
+							/* Main game loop */
+/* -------------------------------------------------------------------------- */
+							
 void game_PlayGame(){
 	Board board;
 	Player player;
 	
 	srand(0);
 	printFirstMenu();
-	if (loadBoardLoop(board) == STATUS_QUIT) {
+	if (loadBoardLoop(board) == FALSE) {
 		return;
 	}
-	if (initPlayerLoop(board, &player) == STATUS_QUIT) {
+	if (initPlayerLoop(board, &player) == FALSE) {
 		return;	
 	}
 	moveShootLoop(board, &player);
@@ -81,9 +82,12 @@ void printFirstMenu() {
 		input = getchar();
 	}
 }
+/* -------------------------------------------------------------------------- */
+							/* Load Board Loop */
+/* -------------------------------------------------------------------------- */
+							
 
-
-Status loadBoardLoop(Board board) {
+Boolean loadBoardLoop(Board board) {
 	char input[INPUT_SIZE];
 	int inputResult;
 	char *command, *boardToken;
@@ -100,13 +104,13 @@ Status loadBoardLoop(Board board) {
 				continue;
 			}
 			if (isQuit(command)) {
-				return STATUS_QUIT;
+				return FALSE;
 			}
 			/* Loads board if input is valid */
 			if (isLoad(command) && !isNull(boardToken = strtok(NULL, " "))) {
-				if (processBoardToken(board, boardToken) == STATUS_CONTINUE) {
+				if (processBoardToken(board, boardToken) == TRUE) {
 					printf("Board successfully loaded\n\n");	
-					return STATUS_CONTINUE;
+					return TRUE;
 				}
 			}
 		}
@@ -115,13 +119,25 @@ Status loadBoardLoop(Board board) {
 }
 
 
-void printInitPlayerPrompt() {
-	printf("At this stage of the program only two commands are acceptable:"
-			"\n%s <x>,<y>\n%s\n\n", COMMAND_INIT, COMMAND_QUIT);
+/* 	Takes board and a string indicating which board to load. Proceeds to load
+	the board returning TRUE if successful and FALSE if not. Includes input
+	validation */
+Boolean processBoardToken(Board board, char *str) {
+	if (strcmp(str, "1") == 0) {
+		board_Load(board, BOARD_1);
+		return TRUE;
+	}
+	else if (strcmp(str, "2") == 0) {
+		board_Load(board, BOARD_2);
+		return TRUE;
+	}
+	return FALSE;
 }
-
-
-Status initPlayerLoop(Board board, Player *player) {
+/* -------------------------------------------------------------------------- */
+							/* Init Player Loop */
+/* -------------------------------------------------------------------------- */
+							
+Boolean initPlayerLoop(Board board, Player *player) {
 	char *command;
 	char input[INPUT_SIZE];
 	int inputResult;
@@ -137,15 +153,21 @@ Status initPlayerLoop(Board board, Player *player) {
 				continue;
 			}
 			if (isQuit(command)) {
-				return STATUS_QUIT;
+				return FALSE;
 			}
 			if (processInit(board, player, command) == TRUE) {
-				return STATUS_CONTINUE;
+				return TRUE;
 			}
 			continue;
 		}
 		printInvalidInput();
 	}
+}
+
+
+void printInitPlayerPrompt() {
+	printf("At this stage of the program only two commands are acceptable:"
+			"\n%s <x>,<y>\n%s\n\n", COMMAND_INIT, COMMAND_QUIT);
 }
 
 
@@ -170,9 +192,10 @@ Boolean processInit(Board board, Player *player, char *command) {
 		/* Places the player if valid position is given */	
 		xValue = strtol(xToken, NULL, 10);
 		yValue = strtol(yToken, NULL, 10);
-		if (inBounds(xValue, yValue)) {
-			playerPosition.x = xValue;
-			playerPosition.y = yValue;
+		playerPosition.x = xValue;
+		playerPosition.y = yValue;
+		/* inBounds function found in helpers.c */
+		if (board_InBounds(playerPosition)) {
 			if (board_PlacePlayer(board, playerPosition)) {
 				player_Initialise(player, playerPosition);
 				return TRUE;
@@ -184,15 +207,9 @@ Boolean processInit(Board board, Player *player, char *command) {
 	printInvalidInput();
 	return FALSE;
 }
-
-
-Boolean inBounds(int x, int y) {
-	if (x >= 0 && x <= BOARD_WIDTH - 1 && y >= 0 && y <= BOARD_HEIGHT - 1) {
-		return TRUE;
-	}
-	return FALSE;	
-}
-
+/* -------------------------------------------------------------------------- */
+							/* Move Shoot Loop */
+/* -------------------------------------------------------------------------- */
 
 void printMoveShootPrompt() {
 	printf("At this stage of the program only three commands are "
@@ -201,7 +218,7 @@ void printMoveShootPrompt() {
 }
 
 
-Status moveShootLoop(Board board, Player *player) {
+Boolean moveShootLoop(Board board, Player *player) {
 	int inputResult;
 	char input[INPUT_SIZE];
 	char *command, *directionToken;
@@ -221,13 +238,13 @@ Status moveShootLoop(Board board, Player *player) {
 				printInvalidInput();
 				continue;
 			}
-			if (isQuit(command)) return STATUS_QUIT;
+			if (isQuit(command)) return FALSE;
 			
 			/* Process a move command */
 			if (isDirection(command)) {
 				moveResult = processMoveCommand(board, player, command);
 				if (moveResult == board_PLAYER_KILLED) {
-					return STATUS_QUIT;
+					return FALSE;
 				}
 				else continue;
 			}
@@ -239,7 +256,7 @@ Status moveShootLoop(Board board, Player *player) {
 					if (hasArrows(player)) {
 						arrowHit = processShoot(board, player, directionToken);
 						if (arrowHit == board_WUMPUS_KILLED) {
-							return STATUS_QUIT;	
+							return FALSE;	
 						}
 						else continue;
 					}
@@ -303,47 +320,6 @@ ArrowHit processShoot(Board board, Player *player, char *directionCommand) {
 }
 
 
-/* 	Takes a string and returns TRUE if the string is a valid direction.
-	Otherwise returns FALSE */
-Boolean isDirection(char *command) {
-	Boolean isDirection;
-	
-	if (isNull(command)) {
-		isDirection = FALSE;
-	}
-	else if (strcmp(command, "n") == 0 || strcmp(command, "north") == 0 ||
-		strcmp(command, "s") == 0 || strcmp(command, "south") == 0 ||
-		strcmp(command, "w") == 0 || strcmp(command, "west") == 0 ||
-		strcmp(command, "e") == 0 || strcmp(command, "east") == 0) 
-	{	
-		isDirection = TRUE;
-	}
-	else {
-		isDirection = FALSE;
-	}
-	return isDirection;
-}
-
-
-Direction createDirection(char *command) {
-	Direction direction;
-	
-	if (strcmp(command, "n") == 0 || strcmp(command, "north") == 0) {
-		direction = player_NORTH;
-	}
-	if(strcmp(command, "s") == 0 || strcmp(command, "south") == 0) {
-		direction = player_SOUTH;
-	}
-	if(strcmp(command, "w") == 0 || strcmp(command, "west") == 0) {
-		direction = player_WEST;
-	}
-	if(strcmp(command, "e") == 0 || strcmp(command, "east") == 0) {
-		direction = player_EAST;
-	}
-	return direction;
-}
-
-
 Position genRandomPosition() {
 	Position position;
 	position.x = rand() % BOARD_WIDTH;
@@ -369,91 +345,82 @@ void batReposition(Board board, Player *player) {
 }
 
 
-Status processBoardToken(Board board, char *str) {
-	Status status;
+Direction createDirection(char *command) {
+	Direction direction;
 	
-	if (strcmp(str, "1") == 0) {
-		board_Load(board, BOARD_1);
-		status = STATUS_CONTINUE;
+	if (strcmp(command, "n") == 0 || strcmp(command, "north") == 0) {
+		direction = player_NORTH;
 	}
-	else if (strcmp(str, "2") == 0) {
-		board_Load(board, BOARD_2);
-		status = STATUS_CONTINUE;
+	if(strcmp(command, "s") == 0 || strcmp(command, "south") == 0) {
+		direction = player_SOUTH;
 	}
-	else {
-		status = STATUS_QUIT;	
+	if(strcmp(command, "w") == 0 || strcmp(command, "west") == 0) {
+		direction = player_WEST;
 	}
-	return status;
+	if(strcmp(command, "e") == 0 || strcmp(command, "east") == 0) {
+		direction = player_EAST;
+	}
+	return direction;
 }
 
+/* -------------------------------------------------------------------------- */
+						/* General Functions */
+/* -------------------------------------------------------------------------- */
 
-Boolean isQuit(char *command) {
-	Boolean isQuit;
-	if(strcmp(command, COMMAND_QUIT) == 0) {
-		isQuit = TRUE;
+/* 	Takes a string and returns TRUE if the string is a valid direction.
+	Otherwise returns FALSE */
+Boolean isDirection(char *command) {
+	Boolean isDirection;
+	
+	if (isNull(command)) {
+		isDirection = FALSE;
+	}
+	else if (strcmp(command, "n") == 0 || strcmp(command, "north") == 0 ||
+		strcmp(command, "s") == 0 || strcmp(command, "south") == 0 ||
+		strcmp(command, "w") == 0 || strcmp(command, "west") == 0 ||
+		strcmp(command, "e") == 0 || strcmp(command, "east") == 0) 
+	{	
+		isDirection = TRUE;
 	}
 	else {
-		isQuit = FALSE;	
+		isDirection = FALSE;
 	}
-	return isQuit;
-}
-
-
-Boolean isShoot(char *command) {
-	Boolean isShoot;
-	if (strcmp(command, COMMAND_SHOOT) == 0) {
-		isShoot = TRUE;
-	}
-	else {
-		isShoot = FALSE;	
-	}
-	return isShoot;
+	return isDirection;
 }
 
 
 Boolean hasArrows(Player *player) {
-	Boolean hasArrows;
-	if (player->numArrows > 0) {
-		hasArrows = TRUE;
-	}
-	else {
-		hasArrows = FALSE;
-	}
-	return hasArrows;
+	if (player->numArrows > 0) return TRUE;
+	else return FALSE;
+}
+
+/* 	The following functions generally serve the purpose of checking if a string 
+	matches a certain command, returning TRUE if it does and FALSE if it doesn't
+*/
+
+Boolean isQuit(char *command) {
+	if(strcmp(command, COMMAND_QUIT) == 0) return TRUE;
+	else return FALSE;
 }
 
 
+Boolean isShoot(char *command) {
+	if (strcmp(command, COMMAND_SHOOT) == 0) return TRUE;
+	else return FALSE;
+}
+
 Boolean isNull(char *str) {
-	Boolean isNull;
-	if (str == NULL) {
-		isNull = TRUE;
-	}
-	else {
-		isNull = FALSE;	
-	}
-	return isNull;
+	if (str == NULL) return TRUE;
+	else return FALSE;
 }
 
 
 Boolean isLoad(char *str) {
-	Boolean isLoad;
-	if (strcmp(str, COMMAND_LOAD) == 0) {
-		isLoad = TRUE;
-	}
-	else {
-		isLoad = FALSE;	
-	}
-	return isLoad;
+	if (strcmp(str, COMMAND_LOAD) == 0) return TRUE;
+	else return FALSE;
 }
 
-
 Boolean isInit(char *str) {
-	Boolean isInit;
-	if (strcmp(str, COMMAND_INIT) == 0) {
-		isInit = TRUE;
-	}
-	else {
-		isInit = FALSE;	
-	}
-	return isInit;
+	if (strcmp(str, COMMAND_INIT) == 0) return TRUE;
+	else return FALSE;
 }
