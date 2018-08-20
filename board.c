@@ -69,6 +69,8 @@ PlayerMove board_MovePlayer(Board board, Position playerPosition,
 		return board_BAT_CELL;
 	}
 	else {
+		board[playerPosition.y][playerPosition.x] = board_TRAVERSED;
+		board[nextPosition.y][nextPosition.x] = board_PLAYER;
 		return board_PLAYER_MOVED;
 	}
 }
