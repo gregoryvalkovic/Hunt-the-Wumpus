@@ -78,7 +78,6 @@ PlayerMove board_MovePlayer(Board board, Position playerPosition,
 
 ArrowHit board_FireArrow(Board board, Position position) {
 	ArrowHit arrowHit;
-	
 	if (isInBounds(position)) {
    	   if (board[position.y][position.x] == board_WUMPUS) {
    	   	   arrowHit = board_WUMPUS_KILLED;
