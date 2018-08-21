@@ -23,12 +23,8 @@ int main() {
     char prompt[] = "Please enter your choice: ";
     int inputResult;
     
-
-
     /* Menu Loop */
    	while(TRUE) {
-   		printf("\nWelcome to Hunt the Wumpus\n");
-	   	printLine(26);
 		printMenu();
    		inputResult = getInput(prompt, input, 10);
    		
@@ -62,6 +58,7 @@ void showStudentInformation() {
 
 
 void printMenu() {
-	
+	printf("\nWelcome to Hunt the Wumpus\n");
+	printLine(26);
    	printf("1. Play game\n2. Show student information\n3. Quit\n\n");
 }

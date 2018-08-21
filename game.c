@@ -9,16 +9,18 @@
 
 /* -------------------------------------------------------------------------- */
                            /* Function Prototypes */
+/* -------------------------------------------------------------------------- */
 void printFirstMenu();
 void printMoveShootPrompt();
 void printInitPlayerPrompt();
 
 Boolean loadBoardLoop(Board board);
-Boolean initPlayerLoop(Board board, Player *player);
-Boolean moveShootLoop(Board board, Player *player);
-
 Boolean processBoardToken(Board board, char *str);
+
+Boolean initPlayerLoop(Board board, Player *player);
 Boolean processInit(Board board, Player *player, char *command);
+
+Boolean moveShootLoop(Board board, Player *player);
 ArrowHit processShoot(Board board, Player *player, char *command);
 PlayerMove processMoveResult(Board board, Player *player,
 							 PlayerMove moveResult);
@@ -76,9 +78,9 @@ void printFirstMenu() {
 	printf("%s\n\n", COMMAND_QUIT);
 	printf("Press enter to continue...\n");
 	
-	/* Loop that waits for player to press enter */
+/* 	Loop that waits for player to press enter. Adapted from stackoverflow
+	https://stackoverflow.com/questions/1406421/press-enter-to-continue-in-c */
 	while(input != '\r' && input != '\n') {
-		/*getchar();	 Clears newline chars from previous input */
 		input = getchar();
 	}
 }
@@ -320,6 +322,7 @@ ArrowHit processShoot(Board board, Player *player, char *directionCommand) {
 }
 
 
+/* Returns a random position that is in bounds */
 Position genRandomPosition() {
 	Position position;
 	position.x = rand() % BOARD_WIDTH;
@@ -328,6 +331,8 @@ Position genRandomPosition() {
 }
 
 
+/* 	Moves the player to a random position on the board. It can only move players
+	to a cell with board_EMPTY or board_TRAVERSED */
 void batReposition(Board board, Player *player) {
 	Position randomPosition;
 	
@@ -345,6 +350,9 @@ void batReposition(Board board, Player *player) {
 }
 
 
+/* 	Takes a string that indicates a direction and returns the corresponding
+	Direction value. Does not validate that input is a direction,this must be 
+	done before calling this function */
 Direction createDirection(char *command) {
 	Direction direction;
 	

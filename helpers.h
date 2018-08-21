@@ -1,7 +1,7 @@
 /*
  * COSC1076 Assignment 1, Semester 2 2018
  * Student name  : Gregory Valkovic
- * Student number: s3689338
+ * Student number: 3689338
  */
 #ifndef HELPERS_H
 #define HELPERS_H
